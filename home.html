@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Q‑chat · Nexus</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    /* (Same styles as before – included for completeness) */
+    * { margin:0; padding:0; box-sizing: border-box; }
+    body {
+      background: radial-gradient(circle at 10% 20%, #0a0c1a, #020617);
+      font-family: 'Inter', sans-serif;
+      color: #f0f3fa;
+      overflow-x: hidden;
+    }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #1e1f2c; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #5b4dff; border-radius: 10px; }
+
+    .glass-panel {
+      background: rgba(18, 22, 40, 0.7);
+      backdrop-filter: blur(16px);
+      border-radius: 32px;
+      border: 1px solid rgba(91, 77, 255, 0.25);
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.4);
+    }
+
+    .app-container {
+      display: grid;
+      grid-template-columns: 280px 1fr 340px;
+      gap: 1.5rem;
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      position: sticky;
+      top: 1.5rem;
+      height: calc(100vh - 3rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 1rem;
+    }
+    .logo-icon {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      width: 44px;
+      height: 44px;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+    .logo-text {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(120deg, #fff, #a78bfa);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 500;
+      color: #cbd5ff;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .nav-item i { width: 28px; font-size: 1.35rem; }
+    .nav-item.active {
+      background: linear-gradient(95deg, #4f46e5, #7c3aed);
+      color: white;
+    }
+    .nav-item:hover:not(.active) { background: rgba(79,70,229,0.2); color: white; }
+
+    /* Feed */
+    .feed-section { display: flex; flex-direction: column; gap: 1.5rem; }
+    .create-post { padding: 1.2rem 1.5rem; }
+    .post-input-area { display: flex; gap: 1rem; align-items: flex-start; }
+    .avatar-sm {
+      width: 48px; height: 48px;
+      background: linear-gradient(145deg, #4f46e5, #2b1b6e);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .post-input {
+      flex: 1;
+      background: rgba(20,24,45,0.8);
+      border: 1px solid rgba(139,92,246,0.4);
+      border-radius: 2rem;
+      padding: 0.9rem 1.3rem;
+      color: white;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+    }
+    .post-input:focus { border-color: #8b5cf6; }
+    .btn-primary {
+      background: linear-gradient(100deg, #4f46e5, #7c3aed);
+      border: none;
+      padding: 0.6rem 1.6rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .post-card { padding: 1.2rem 1.5rem; margin-bottom: 1.5rem; }
+    .post-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.8rem;
+    }
+    .post-user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .post-user {
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .post-time { font-size: 0.7rem; color: #9ca3cf; }
+    .follow-btn {
+      background: rgba(79,70,229,0.2);
+      border: none;
+      border-radius: 2rem;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #cbd5ff;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .follow-btn.following {
+      background: #4f46e5;
+      color: white;
+    }
+    .post-stats {
+      display: flex;
+      gap: 1.5rem;
+      border-top: 1px solid rgba(139,92,246,0.2);
+      border-bottom: 1px solid rgba(139,92,246,0.2);
+      padding: 0.6rem 0;
+      font-size: 0.8rem;
+      margin: 0.8rem 0;
+    }
+    .action-btn {
+      background: none;
+      border: none;
+      color: #b9c3e6;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      cursor: pointer;
+    }
+    .action-btn.liked { color: #f43f5e; }
+    .action-btn:hover { background: rgba(79,70,229,0.2); }
+
+    /* Verified badge */
+    .verified-badge {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 0.3rem;
+      color: #a78bfa;
+      vertical-align: middle;
+    }
+    .verified-badge svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Comments */
+    .comments-section {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(139,92,246,0.2);
+    }
+    .comment {
+      margin-left: 0;
+      margin-bottom: 1rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 1rem;
+      padding: 0.8rem;
+    }
+    .reply {
+      margin-left: 2rem;
+      margin-top: 0.5rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 1rem;
+      padding: 0.6rem;
+    }
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .comment-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(145deg, #4f46e5, #2b1b6e);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .comment-user {
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .comment-time {
+      font-size: 0.7rem;
+      color: #9ca3cf;
+    }
+    .comment-text {
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+    .comment-actions {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.75rem;
+      color: #9ca3cf;
+    }
+    .comment-actions span {
+      cursor: pointer;
+    }
+    .comment-actions span:hover {
+      color: #a78bfa;
+    }
+    .reaction-btn {
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+    .reaction-btn.active {
+      color: #f43f5e;
+    }
+    .donation-badge {
+      background: #10b981;
+      padding: 0.2rem 0.5rem;
+      border-radius: 1rem;
+      font-size: 0.7rem;
+      margin-left: 0.5rem;
+    }
+    .reply-input {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      align-items: center;
+    }
+    .reply-input input {
+      flex: 1;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid #4f46e5;
+      border-radius: 1.5rem;
+      padding: 0.4rem 0.8rem;
+      color: white;
+      font-size: 0.8rem;
+    }
+    .replies-container {
+      margin-top: 0.5rem;
+    }
+
+    /* Right sidebar */
+    .right-sidebar { position: sticky; top: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+    .widget { padding: 1rem 1.2rem; }
+    .widget-title { font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+    .trend-item { display: flex; justify-content: space-between; margin-bottom: 0.6rem; }
+    .search-input {
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid #4f46e5;
+      border-radius: 2rem;
+      padding: 0.6rem 1rem;
+      color: white;
+      margin-bottom: 1rem;
+    }
+    .user-result {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(139,92,246,0.2);
+    }
+    .user-result-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .user-result-avatar {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(145deg, #4f46e5, #2b1b6e);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .user-result-username {
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+    .user-result-email {
+      font-size: 0.7rem;
+      color: #9ca3cf;
+    }
+    .view-profile-btn {
+      background: rgba(79,70,229,0.3);
+      border: none;
+      padding: 0.2rem 0.8rem;
+      border-radius: 1.5rem;
+      font-size: 0.7rem;
+      color: white;
+      cursor: pointer;
+    }
+    .show-all-btn {
+      margin-top: 0.5rem;
+      width: 100%;
+      background: rgba(79,70,229,0.3);
+      border: none;
+      padding: 0.4rem;
+      border-radius: 2rem;
+      color: white;
+      cursor: pointer;
+    }
+    .search-loading, .search-no-results {
+      text-align: center;
+      font-size: 0.8rem;
+      padding: 0.5rem;
+      color: #9ca3cf;
+    }
+    .chat-messages {
+      max-height: 200px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+    .chat-bubble {
+      background: rgba(79,70,229,0.25);
+      padding: 0.5rem 0.8rem;
+      border-radius: 1.2rem;
+      font-size: 0.8rem;
+      max-width: 90%;
+    }
+    .chat-bubble.own { background: #4f46e5; align-self: flex-end; }
+    .chat-input-group { display: flex; gap: 0.5rem; }
+    .chat-input {
+      flex: 1;
+      background: rgba(0,0,0,0.5);
+      border: 1px solid #4f46e5;
+      border-radius: 2rem;
+      padding: 0.5rem 1rem;
+      color: white;
+      outline: none;
+    }
+    @media (max-width: 1100px) {
+      .app-container { grid-template-columns: 1fr; }
+      .sidebar, .right-sidebar { position: static; height: auto; }
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <div class="logo-area glass-panel">
+      <div class="logo-icon">Q</div>
+      <div class="logo-text">Q‑chat</div>
+    </div>
+    <div class="nav-menu glass-panel" style="padding: 0.8rem;">
+      <div class="nav-item active" data-nav="home"><i class="fas fa-compass"></i> Nexus feed</div>
+      <div class="nav-item" data-nav="profile"><i class="fas fa-user-astronaut"></i> Orbit</div>
+      <div class="nav-item" data-nav="explore"><i class="fas fa-fire"></i> Trendwave</div>
+    </div>
+    <div class="glass-panel" style="padding: 1rem;">
+      <div><i class="fas fa-headset"></i> Q‑chat premium</div>
+      <div style="font-size:0.7rem;">✦ zero limits ✦</div>
+    </div>
+  </div>
+
+  <!-- MAIN FEED -->
+  <div class="feed-section">
+    <div class="create-post glass-panel">
+      <div class="post-input-area">
+        <div class="avatar-sm" id="currentUserAvatar">Q</div>
+        <textarea id="newPostContent" class="post-input" rows="2" placeholder="Share a vibe, thought or meme... #Qchat"></textarea>
+      </div>
+      <div class="post-actions" style="display: flex; justify-content: flex-end;">
+        <button class="btn-primary" id="publishBtn"><i class="fas fa-feather-alt"></i> Pulse</button>
+      </div>
+    </div>
+    <div id="postsContainer" style="display: flex; flex-direction: column; gap: 1.5rem;"></div>
+  </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="right-sidebar">
+    <div class="widget glass-panel">
+      <div class="widget-title"><i class="fas fa-chart-line"></i> Quantum trends</div>
+      <div class="trend-item"><span>#QchatOrigin</span><span>2.1k</span></div>
+      <div class="trend-item"><span>#NeonUI</span><span>1.4k</span></div>
+      <div class="trend-item"><span>#futureSocial</span><span>892</span></div>
+    </div>
+
+    <!-- USER SEARCH WIDGET -->
+    <div class="widget glass-panel">
+      <div class="widget-title"><i class="fas fa-search"></i> Find Users</div>
+      <input type="text" id="searchUsersInput" class="search-input" placeholder="Search by username...">
+      <div id="searchResultsContainer"></div>
+      <button id="showAllUsersBtn" class="show-all-btn">Show All Users</button>
+    </div>
+
+    <!-- CHAT WIDGET -->
+    <div class="widget glass-panel">
+      <div class="widget-title"><i class="fas fa-comment-dots"></i> Q‑live · Nexus chat</div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-input-group">
+        <input type="text" id="chatInput" class="chat-input" placeholder="Message crew...">
+        <button id="sendChatBtn" class="btn-primary" style="padding:0.5rem 1rem;">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+  import { getDatabase, ref, push, onValue, set, update, get, child, serverTimestamp, query, orderByChild, startAt, endAt, limitToFirst } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAZk3_MrTsUhmxU3rOz7d3GtruRCf_MKk0",
+    authDomain: "q-chat-77ee1.firebaseapp.com",
+    databaseURL: "https://q-chat-77ee1-default-rtdb.firebaseio.com",
+    projectId: "q-chat-77ee1",
+    storageBucket: "q-chat-77ee1.firebasestorage.app",
+    messagingSenderId: "916092801511",
+    appId: "1:916092801511:web:ee91f171b0a33c99012d42",
+    measurementId: "G-8JSL8BZP9J"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  let currentUser = null;
+  let currentUserProfile = null;
+  let followingMap = {};
+  let userVerificationCache = {};
+
+  // Helper: verified badge HTML
+  function getVerifiedBadge(verified) {
+    if (!verified) return '';
+    return `<span class="verified-badge"><svg viewBox="0 0 12 13" width="16" height="16" fill="currentColor"><title>Verified account</title><g fill-rule="evenodd" transform="translate(-98 -917)"><path d="m106.853 922.354-3.5 3.5a.499.499 0 0 1-.706 0l-1.5-1.5a.5.5 0 1 1 .706-.708l1.147 1.147 3.147-3.147a.5.5 0 1 1 .706.708m3.078 2.295-.589-1.149.588-1.15a.633.633 0 0 0-.219-.82l-1.085-.7-.065-1.287a.627.627 0 0 0-.6-.603l-1.29-.066-.703-1.087a.636.636 0 0 0-.82-.217l-1.148.588-1.15-.588a.631.631 0 0 0-.82.22l-.701 1.085-1.289.065a.626.626 0 0 0-.6.6l-.066 1.29-1.088.702a.634.634 0 0 0-.216.82l.588 1.149-.588 1.15a.632.632 0 0 0 .219.819l1.085.701.065 1.286c.014.33.274.59.6.604l1.29.065.703 1.088c.177.27.53.362.82.216l1.148-.588 1.15.589a.629.629 0 0 0 .82-.22l.701-1.085 1.286-.064a.627.627 0 0 0 .604-.601l.065-1.29 1.088-.703a.633.633 0 0 0 .216-.819"></path></g></svg></span>`;
+  }
+
+  async function getVerificationStatus(uid) {
+    if (userVerificationCache.hasOwnProperty(uid)) return userVerificationCache[uid];
+    try {
+      const snap = await get(child(ref(db), `users/${uid}/verified`));
+      const verified = snap.val() === true;
+      userVerificationCache[uid] = verified;
+      return verified;
+    } catch (e) { return false; }
+  }
+
+  function listenUserVerification(uid, callback) {
+    const verRef = ref(db, `users/${uid}/verified`);
+    onValue(verRef, (snap) => {
+      const verified = snap.val() === true;
+      userVerificationCache[uid] = verified;
+      if (callback) callback(verified);
+    });
+  }
+
+  // Auth state
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = 'auth.html';
+      return;
+    }
+    currentUser = user;
+    const profileSnap = await get(child(ref(db), `users/${user.uid}`));
+    if (profileSnap.exists()) {
+      currentUserProfile = profileSnap.val();
+      document.getElementById('currentUserAvatar').innerText = currentUserProfile.avatar || currentUserProfile.username?.charAt(0).toUpperCase() || 'U';
+    } else {
+      currentUserProfile = { username: user.email.split('@')[0], fullName: user.email, verified: false };
+      await set(ref(db, `users/${user.uid}`), currentUserProfile);
+      document.getElementById('currentUserAvatar').innerText = currentUserProfile.username.charAt(0).toUpperCase();
+    }
+    const followingSnap = await get(child(ref(db), `users/${user.uid}/following`));
+    if (followingSnap.exists()) followingMap = followingSnap.val();
+    loadPosts();
+    listenChat();
+  });
+
+  async function followUser(targetUid) {
+    if (!currentUser) return;
+    await update(ref(db), {
+      [`users/${currentUser.uid}/following/${targetUid}`]: true,
+      [`users/${targetUid}/followers/${currentUser.uid}`]: true
+    });
+    followingMap[targetUid] = true;
+    loadPosts();
+  }
+
+  async function unfollowUser(targetUid) {
+    if (!currentUser) return;
+    await update(ref(db), {
+      [`users/${currentUser.uid}/following/${targetUid}`]: null,
+      [`users/${targetUid}/followers/${currentUser.uid}`]: null
+    });
+    delete followingMap[targetUid];
+    loadPosts();
+  }
+
+  // Posts
+  const postsContainer = document.getElementById('postsContainer');
+  const publishBtn = document.getElementById('publishBtn');
+  const newPostInput = document.getElementById('newPostContent');
+
+  function loadPosts() {
+    const postsRef = ref(db, 'posts');
+    onValue(postsRef, (snapshot) => {
+      const postsData = snapshot.val();
+      if (!postsData) {
+        postsContainer.innerHTML = '<div class="glass-panel" style="padding:2rem; text-align:center;">No pulses yet. Be the first! ✨</div>';
+        return;
+      }
+      const postsArray = Object.entries(postsData).map(([id, data]) => ({ id, ...data }));
+      postsArray.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+      renderPosts(postsArray);
+    });
+  }
+
+  function renderPosts(postsArray) {
+    postsContainer.innerHTML = '';
+    for (const post of postsArray) {
+      const isLiked = post.likes && post.likes[currentUser?.uid];
+      const likeCount = post.likes ? Object.keys(post.likes).length : 0;
+      const isFollowing = followingMap[post.authorId] === true;
+      const postDiv = document.createElement('div');
+      postDiv.className = 'post-card glass-panel';
+      postDiv.setAttribute('data-post-id', post.id);
+
+      // username with badge
+      const usernameSpan = document.createElement('span');
+      usernameSpan.className = 'post-user';
+      usernameSpan.setAttribute('data-uid', post.authorId);
+      usernameSpan.style.cursor = 'pointer';
+      usernameSpan.innerText = post.authorUsername;
+      const badgeSpan = document.createElement('span');
+      badgeSpan.className = 'verified-badge-placeholder';
+      usernameSpan.appendChild(badgeSpan);
+      getVerificationStatus(post.authorId).then(v => badgeSpan.innerHTML = getVerifiedBadge(v));
+      listenUserVerification(post.authorId, v => badgeSpan.innerHTML = getVerifiedBadge(v));
+
+      postDiv.innerHTML = `
+        <div class="post-header">
+          <div class="post-user-info">
+            <div class="avatar-sm" data-uid="${post.authorId}" style="background:linear-gradient(145deg,#6d28d9,#4c1d95);">${post.authorAvatar || post.authorUsername?.charAt(0) || 'U'}</div>
+            <div><div class="post-user-container"></div><div class="post-time">${new Date(post.timestamp).toLocaleString()}</div></div>
+          </div>
+          ${post.authorId !== currentUser?.uid ? `<button class="follow-btn ${isFollowing ? 'following' : ''}" data-uid="${post.authorId}">${isFollowing ? 'Following' : 'Follow'}</button>` : ''}
+        </div>
+        <div class="post-content">${escapeHtml(post.content)}</div>
+        <div class="post-stats">
+          <span>❤️ ${likeCount} likes</span>
+          <span>💬 ${post.commentCount || 0} replies</span>
+        </div>
+        <div class="post-actions-bar" style="display:flex; gap:1rem;">
+          <button class="action-btn ${isLiked ? 'liked' : ''}" data-like="${post.id}"><i class="${isLiked ? 'fas' : 'far'} fa-heart"></i> ${isLiked ? 'Liked' : 'Like'}</button>
+          <button class="action-btn" data-comment="${post.id}"><i class="far fa-comment"></i> Comment</button>
+          <button class="action-btn" data-share="${post.id}"><i class="fas fa-retweet"></i> Resonate</button>
+        </div>
+        <div class="comments-section" id="comments-${post.id}" style="display: none;"></div>
+      `;
+      const userContainer = postDiv.querySelector('.post-user-container');
+      userContainer.appendChild(usernameSpan);
+      // click handlers
+      const avatarElem = postDiv.querySelector(`.avatar-sm[data-uid="${post.authorId}"]`);
+      if (avatarElem) avatarElem.addEventListener('click', () => window.location.href = `profile.html?uid=${post.authorId}`);
+      usernameSpan.addEventListener('click', () => window.location.href = `profile.html?uid=${post.authorId}`);
+      // like
+      const likeBtn = postDiv.querySelector(`[data-like="${post.id}"]`);
+      likeBtn.addEventListener('click', async () => {
+        if (!currentUser) return;
+        const likeRef = ref(db, `posts/${post.id}/likes/${currentUser.uid}`);
+        if (isLiked) await set(likeRef, null);
+        else await set(likeRef, true);
+      });
+      // comment toggle
+      const commentBtn = postDiv.querySelector(`[data-comment="${post.id}"]`);
+      const commentsDiv = postDiv.querySelector(`#comments-${post.id}`);
+      commentBtn.addEventListener('click', () => {
+        if (commentsDiv.style.display === 'none') {
+          commentsDiv.style.display = 'block';
+          loadCommentsForPost(post.id);
+        } else commentsDiv.style.display = 'none';
+      });
+      // share
+      const shareBtn = postDiv.querySelector(`[data-share="${post.id}"]`);
+      shareBtn.addEventListener('click', () => alert(`🌀 Resonated: "${post.content.substring(0,50)}..." shared to your orbit!`));
+      // follow
+      const followBtn = postDiv.querySelector('.follow-btn');
+      if (followBtn) {
+        followBtn.addEventListener('click', async () => {
+          const targetUid = followBtn.dataset.uid;
+          if (followBtn.classList.contains('following')) await unfollowUser(targetUid);
+          else await followUser(targetUid);
+        });
+      }
+      postsContainer.appendChild(postDiv);
+    }
+  }
+
+  // Comments, Replies, Donations
+  async function loadCommentsForPost(postId) {
+    const commentsRef = ref(db, `posts/${postId}/comments`);
+    onValue(commentsRef, (snapshot) => {
+      const commentsData = snapshot.val();
+      const container = document.getElementById(`comments-${postId}`);
+      if (!container) return;
+      container.innerHTML = '';
+      if (!commentsData) {
+        container.innerHTML = '<div style="padding: 0.5rem; color: #9ca3cf;">No comments yet. Be the first!</div>';
+        renderAddCommentForm(container, postId);
+        return;
+      }
+      const commentsArray = Object.entries(commentsData).map(([id, data]) => ({ id, ...data }));
+      commentsArray.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
+      commentsArray.forEach(comment => container.appendChild(renderComment(comment, postId)));
+      renderAddCommentForm(container, postId);
+    });
+  }
+
+  function renderComment(comment, postId, isReply = false) {
+    const commentDiv = document.createElement('div');
+    commentDiv.className = isReply ? 'reply' : 'comment';
+    commentDiv.setAttribute('data-comment-id', comment.id);
+
+    const reactionTypes = ['like', 'love', 'laugh'];
+    let reactionsHtml = '';
+    reactionTypes.forEach(type => {
+      const count = comment.reactions ? Object.values(comment.reactions).filter(r => r === type).length : 0;
+      const isActive = comment.reactions && comment.reactions[currentUser?.uid] === type;
+      reactionsHtml += `<span class="reaction-btn ${isActive ? 'active' : ''}" data-type="${type}" data-comment-id="${comment.id}">${type === 'like' ? '❤️' : type === 'love' ? '😍' : '😂'} ${count}</span>`;
+    });
+
+    const donationTotal = comment.donations ? Object.values(comment.donations).reduce((a,b) => a + b, 0) : 0;
+    const donationHtml = donationTotal > 0 ? `<span class="donation-badge">💸 $${donationTotal}</span>` : '';
+
+    const usernameSpan = document.createElement('span');
+    usernameSpan.className = 'comment-user';
+    usernameSpan.innerText = comment.username;
+    const badgeSpan = document.createElement('span');
+    badgeSpan.className = 'verified-badge-placeholder';
+    usernameSpan.appendChild(badgeSpan);
+    getVerificationStatus(comment.userId).then(v => badgeSpan.innerHTML = getVerifiedBadge(v));
+    listenUserVerification(comment.userId, v => badgeSpan.innerHTML = getVerifiedBadge(v));
+    usernameSpan.addEventListener('click', () => window.location.href = `profile.html?uid=${comment.userId}`);
+
+    commentDiv.innerHTML = `
+      <div class="comment-header">
+        <div class="comment-avatar">${comment.avatar || comment.username?.charAt(0).toUpperCase() || 'U'}</div>
+        <div><div class="comment-user-container"></div><div class="comment-time">${new Date(comment.timestamp).toLocaleString()}</div></div>
+      </div>
+      <div class="comment-text">${escapeHtml(comment.text)}</div>
+      <div class="comment-actions">
+        ${reactionsHtml}
+        <span class="reply-toggle" data-comment-id="${comment.id}">Reply</span>
+        <span class="donate-toggle" data-comment-id="${comment.id}">Donate</span>
+        ${donationHtml}
+      </div>
+      <div class="reply-input" id="reply-input-${comment.id}" style="display: none;">
+        <input type="text" placeholder="Write a reply..." id="reply-text-${comment.id}">
+        <button class="btn-primary" style="padding: 0.2rem 1rem;" data-submit-reply="${comment.id}">Send</button>
+      </div>
+      <div id="replies-${comment.id}" class="replies-container"></div>
+    `;
+
+    const userContainer = commentDiv.querySelector('.comment-user-container');
+    userContainer.appendChild(usernameSpan);
+
+    // reactions
+    const reactionBtns = commentDiv.querySelectorAll('.reaction-btn');
+    reactionBtns.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const type = btn.dataset.type;
+        const commentId = btn.dataset.commentId;
+        const reactionsRef = ref(db, `posts/${postId}/comments/${commentId}/reactions/${currentUser.uid}`);
+        const currentReaction = comment.reactions?.[currentUser.uid];
+        if (currentReaction === type) await set(reactionsRef, null);
+        else await set(reactionsRef, type);
+      });
+    });
+
+    // reply toggle
+    const replyToggle = commentDiv.querySelector('.reply-toggle');
+    const replyInputDiv = commentDiv.querySelector(`#reply-input-${comment.id}`);
+    replyToggle.addEventListener('click', () => {
+      replyInputDiv.style.display = replyInputDiv.style.display === 'none' ? 'flex' : 'none';
+    });
+
+    // submit reply
+    const submitReplyBtn = commentDiv.querySelector(`[data-submit-reply="${comment.id}"]`);
+    const replyTextInput = commentDiv.querySelector(`#reply-text-${comment.id}`);
+    submitReplyBtn.addEventListener('click', async () => {
+      const replyText = replyTextInput.value.trim();
+      if (!replyText) return;
+      const repliesRef = ref(db, `posts/${postId}/comments/${comment.id}/replies`);
+      const newReplyRef = push(repliesRef);
+      await set(newReplyRef, {
+        text: replyText,
+        userId: currentUser.uid,
+        username: currentUserProfile?.username || currentUser.email.split('@')[0],
+        avatar: currentUserProfile?.avatar || currentUserProfile?.username?.charAt(0).toUpperCase() || 'U',
+        timestamp: serverTimestamp(),
+        reactions: {},
+        donations: {}
+      });
+      replyTextInput.value = '';
+      replyInputDiv.style.display = 'none';
+      loadRepliesForComment(postId, comment.id);
+    });
+
+    // donate
+    const donateToggle = commentDiv.querySelector('.donate-toggle');
+    donateToggle.addEventListener('click', async () => {
+      const amount = prompt("Enter donation amount (USD):", "5");
+      if (amount && !isNaN(amount) && Number(amount) > 0) {
+        const donationRef = ref(db, `posts/${postId}/comments/${comment.id}/donations/${currentUser.uid}`);
+        const currentDonation = comment.donations?.[currentUser.uid] || 0;
+        await set(donationRef, currentDonation + Number(amount));
+        alert(`Thank you for donating $${amount}!`);
+      } else alert("Invalid amount.");
+    });
+
+    loadRepliesForComment(postId, comment.id, commentDiv.querySelector(`#replies-${comment.id}`));
+    return commentDiv;
+  }
+
+  function loadRepliesForComment(postId, commentId, container = null) {
+    if (!container) container = document.querySelector(`#replies-${commentId}`);
+    if (!container) return;
+    const repliesRef = ref(db, `posts/${postId}/comments/${commentId}/replies`);
+    onValue(repliesRef, (snapshot) => {
+      const repliesData = snapshot.val();
+      container.innerHTML = '';
+      if (!repliesData) return;
+      const repliesArray = Object.entries(repliesData).map(([id, data]) => ({ id, ...data }));
+      repliesArray.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
+      repliesArray.forEach(reply => container.appendChild(renderComment(reply, postId, true)));
+    });
+  }
+
+  function renderAddCommentForm(container, postId) {
+    const formDiv = document.createElement('div');
+    formDiv.style.display = 'flex';
+    formDiv.style.gap = '0.5rem';
+    formDiv.style.marginTop = '1rem';
+    formDiv.innerHTML = `
+      <input type="text" id="new-comment-${postId}" placeholder="Add a comment..." style="flex:1; background:rgba(0,0,0,0.5); border:1px solid #4f46e5; border-radius:2rem; padding:0.5rem 1rem; color:white;">
+      <button class="btn-primary" id="submit-comment-${postId}" style="padding:0.5rem 1rem;">Post</button>
+    `;
+    const input = formDiv.querySelector(`#new-comment-${postId}`);
+    const btn = formDiv.querySelector(`#submit-comment-${postId}`);
+    btn.addEventListener('click', async () => {
+      const text = input.value.trim();
+      if (!text) return;
+      const commentsRef = ref(db, `posts/${postId}/comments`);
+      const newCommentRef = push(commentsRef);
+      await set(newCommentRef, {
+        text: text,
+        userId: currentUser.uid,
+        username: currentUserProfile?.username || currentUser.email.split('@')[0],
+        avatar: currentUserProfile?.avatar || currentUserProfile?.username?.charAt(0).toUpperCase() || 'U',
+        timestamp: serverTimestamp(),
+        reactions: {},
+        donations: {}
+      });
+      input.value = '';
+      const postSnap = await get(child(ref(db), `posts/${postId}`));
+      const currentCount = postSnap.val()?.commentCount || 0;
+      await update(ref(db), { [`posts/${postId}/commentCount`]: currentCount + 1 });
+    });
+    container.appendChild(formDiv);
+  }
+
+  publishBtn.addEventListener('click', async () => {
+    if (!currentUser) return;
+    const content = newPostInput.value.trim();
+    if (!content) return alert("Write something to pulse!");
+    const newPostRef = push(ref(db, 'posts'));
+    await set(newPostRef, {
+      content: content,
+      authorId: currentUser.uid,
+      authorUsername: currentUserProfile?.username || currentUser.email.split('@')[0],
+      authorAvatar: currentUserProfile?.avatar || currentUserProfile?.username?.charAt(0) || 'Q',
+      timestamp: serverTimestamp(),
+      likes: {},
+      commentCount: 0
+    });
+    newPostInput.value = '';
+  });
+
+  // Chat
+  const chatMessagesDiv = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const sendBtn = document.getElementById('sendChatBtn');
+
+  function listenChat() {
+    const chatRef = ref(db, 'chat');
+    onValue(chatRef, (snapshot) => {
+      const msgs = snapshot.val();
+      if (!msgs) return;
+      const msgList = Object.values(msgs);
+      msgList.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
+      chatMessagesDiv.innerHTML = '';
+      msgList.forEach(msg => {
+        const bubble = document.createElement('div');
+        bubble.className = `chat-bubble ${msg.userId === currentUser?.uid ? 'own' : ''}`;
+        getVerificationStatus(msg.userId).then(v => {
+          bubble.innerHTML = `<strong>${escapeHtml(msg.username)} ${getVerifiedBadge(v)}</strong><br>${escapeHtml(msg.text)}`;
+        });
+        listenUserVerification(msg.userId, v => {
+          bubble.innerHTML = `<strong>${escapeHtml(msg.username)} ${getVerifiedBadge(v)}</strong><br>${escapeHtml(msg.text)}`;
+        });
+        chatMessagesDiv.appendChild(bubble);
+      });
+      chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+    });
+  }
+
+  sendBtn.addEventListener('click', async () => {
+    if (!currentUser || !currentUserProfile) return;
+    const text = chatInput.value.trim();
+    if (!text) return;
+    const chatRef = ref(db, 'chat');
+    await push(chatRef, {
+      text: text,
+      userId: currentUser.uid,
+      username: currentUserProfile.username || currentUser.email.split('@')[0],
+      timestamp: serverTimestamp()
+    });
+    chatInput.value = '';
+  });
+  chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendBtn.click(); });
+
+  // Navigation
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (item.dataset.nav === 'profile') window.location.href = 'profile.html';
+      else if (item.dataset.nav === 'explore') alert("Trendwave is coming soon!");
+      else {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+      }
+    });
+  });
+
+  // ========== USER SEARCH FEATURE (with fallback for missing index) ==========
+  const searchInputElem = document.getElementById('searchUsersInput');
+  const resultsContainer = document.getElementById('searchResultsContainer');
+  const showAllBtnElem = document.getElementById('showAllUsersBtn');
+  let searchTimeout;
+
+  function truncateEmail(email) {
+    if (!email) return '';
+    const atIndex = email.indexOf('@');
+    if (atIndex <= 2) return email;
+    const local = email.substring(0, atIndex);
+    const domain = email.substring(atIndex);
+    if (local.length <= 3) return email;
+    return local.substring(0, 3) + '***' + domain;
+  }
+
+  async function performSearch(query) {
+    if (!query || query.trim() === '') {
+      resultsContainer.innerHTML = '';
+      return;
+    }
+    resultsContainer.innerHTML = '<div class="search-loading">Searching...</div>';
+    try {
+      // Try indexed query first
+      const usersRef = ref(db, 'users');
+      const q = query(usersRef, orderByChild('username'), startAt(query), endAt(query + '\uf8ff'), limitToFirst(10));
+      const snapshot = await get(q);
+      let users = snapshot.val();
+      // If no results, fallback to local filtering (in case of missing index)
+      if (!users || Object.keys(users).length === 0) {
+        const allSnap = await get(usersRef);
+        const allUsers = allSnap.val();
+        if (allUsers) {
+          users = {};
+          for (const [uid, user] of Object.entries(allUsers)) {
+            if (user.username && user.username.toLowerCase().startsWith(query.toLowerCase())) {
+              users[uid] = user;
+              if (Object.keys(users).length >= 10) break;
+            }
+          }
+        }
+      }
+      if (!users || Object.keys(users).length === 0) {
+        resultsContainer.innerHTML = '<div class="search-no-results">No users found.</div>';
+        return;
+      }
+      displayUsers(users);
+    } catch (err) {
+      console.error("Search error:", err);
+      // Fallback: fetch all and filter locally
+      try {
+        const allSnap = await get(ref(db, 'users'));
+        const allUsers = allSnap.val();
+        if (allUsers) {
+          const filtered = {};
+          for (const [uid, user] of Object.entries(allUsers)) {
+            if (user.username && user.username.toLowerCase().startsWith(query.toLowerCase())) {
+              filtered[uid] = user;
+              if (Object.keys(filtered).length >= 10) break;
+            }
+          }
+          if (Object.keys(filtered).length > 0) {
+            displayUsers(filtered);
+            return;
+          }
+        }
+        resultsContainer.innerHTML = '<div class="search-no-results">No users found.</div>';
+      } catch (fallbackErr) {
+        console.error("Fallback search error:", fallbackErr);
+        resultsContainer.innerHTML = '<div class="search-no-results">Error searching users. Please try again.</div>';
+      }
+    }
+  }
+
+  function displayUsers(users) {
+    resultsContainer.innerHTML = '';
+    for (const [uid, user] of Object.entries(users)) {
+      if (uid === currentUser?.uid) continue;
+      const resultDiv = document.createElement('div');
+      resultDiv.className = 'user-result';
+      resultDiv.innerHTML = `
+        <div class="user-result-info">
+          <div class="user-result-avatar">${user.avatar || user.username?.charAt(0).toUpperCase() || 'U'}</div>
+          <div>
+            <div class="user-result-username">${escapeHtml(user.username)}</div>
+            <div class="user-result-email">${truncateEmail(user.email)}</div>
+          </div>
+        </div>
+        <button class="view-profile-btn" data-uid="${uid}">View Profile</button>
+      `;
+      const profileBtn = resultDiv.querySelector('.view-profile-btn');
+      profileBtn.addEventListener('click', () => window.location.href = `profile.html?uid=${uid}`);
+      resultsContainer.appendChild(resultDiv);
+    }
+  }
+
+  searchInputElem.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim();
+    searchTimeout = setTimeout(() => performSearch(query), 300);
+  });
+
+  async function showAllUsers() {
+    resultsContainer.innerHTML = '<div class="search-loading">Loading all users...</div>';
+    try {
+      const usersRef = ref(db, 'users');
+      const snapshot = await get(usersRef);
+      const users = snapshot.val();
+      if (!users) {
+        resultsContainer.innerHTML = '<div class="search-no-results">No users found.</div>';
+        return;
+      }
+      // Convert to array, limit to 20, exclude self
+      const usersArray = Object.entries(users);
+      const limited = usersArray.slice(0, 20);
+      const filteredUsers = {};
+      for (const [uid, user] of limited) {
+        if (uid !== currentUser?.uid) filteredUsers[uid] = user;
+      }
+      displayUsers(filteredUsers);
+    } catch (err) {
+      console.error(err);
+      resultsContainer.innerHTML = '<div class="search-no-results">Error loading users.</div>';
+    }
+  }
+
+  showAllBtnElem.addEventListener('click', showAllUsers);
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
+  }
+</script>
+</body>
+</html>

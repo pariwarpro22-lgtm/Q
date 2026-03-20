@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Q‑chat · Orbit</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { margin:0; padding:0; box-sizing: border-box; }
+    body {
+      background: radial-gradient(circle at 10% 20%, #0a0c1a, #020617);
+      font-family: 'Inter', sans-serif;
+      color: #f0f3fa;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .glass-panel {
+      background: rgba(18, 22, 40, 0.7);
+      backdrop-filter: blur(16px);
+      border-radius: 32px;
+      border: 1px solid rgba(91, 77, 255, 0.25);
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.4);
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .profile-header {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .avatar-large {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(145deg, #4f46e5, #2b1b6e);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: bold;
+    }
+    .stats {
+      display: flex;
+      gap: 2rem;
+      margin-top: 0.5rem;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: #9ca3cf;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(139,92,246,0.2);
+    }
+    .info-label {
+      font-weight: 500;
+      color: #cbd5ff;
+    }
+    .edit-btn, .save-btn, .cancel-btn, .follow-profile-btn {
+      background: linear-gradient(100deg, #4f46e5, #7c3aed);
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      color: white;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .follow-profile-btn.following {
+      background: #10b981;
+    }
+    .cancel-btn {
+      background: rgba(100,100,150,0.5);
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.3rem;
+      color: #cbd5ff;
+    }
+    .form-group input {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(139,92,246,0.4);
+      padding: 0.6rem 1rem;
+      border-radius: 1.5rem;
+      color: white;
+    }
+    .hidden {
+      display: none;
+    }
+    .nav-home {
+      margin-bottom: 1.5rem;
+      display: inline-block;
+      color: #a78bfa;
+      text-decoration: none;
+    }
+    .post-item {
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+    .error-message {
+      color: #f87171;
+      text-align: center;
+      padding: 2rem;
+    }
+    .loading {
+      text-align: center;
+      padding: 2rem;
+    }
+    .verified-badge {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 0.3rem;
+      color: #a78bfa;
+      vertical-align: middle;
+    }
+    .verified-badge svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .admin-link {
+      margin-top: 1rem;
+      text-align: center;
+    }
+    .admin-link a {
+      color: #a78bfa;
+      text-decoration: none;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <a href="home.html" class="nav-home"><i class="fas fa-arrow-left"></i> Back to Nexus</a>
+  <div class="glass-panel" style="padding: 2rem;">
+    <div id="profileContent">
+      <div class="loading">Loading profile...</div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+  import { getDatabase, ref, get, child, update, query, orderByChild, equalTo, onValue, set } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAZk3_MrTsUhmxU3rOz7d3GtruRCf_MKk0",
+    authDomain: "q-chat-77ee1.firebaseapp.com",
+    databaseURL: "https://q-chat-77ee1-default-rtdb.firebaseio.com",
+    projectId: "q-chat-77ee1",
+    storageBucket: "q-chat-77ee1.firebasestorage.app",
+    messagingSenderId: "916092801511",
+    appId: "1:916092801511:web:ee91f171b0a33c99012d42",
+    measurementId: "G-8JSL8BZP9J"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+
+  let currentUser = null;
+  let profileUserId = null;
+  let profileData = null;
+  let isOwnProfile = false;
+  let followingStatus = false;
+  const ADMIN_EMAIL = "admin@qchat.com";
+
+  function getVerifiedBadge(verified) {
+    if (!verified) return '';
+    return `<span class="verified-badge"><svg viewBox="0 0 12 13" width="16" height="16" fill="currentColor"><title>Verified account</title><g fill-rule="evenodd" transform="translate(-98 -917)"><path d="m106.853 922.354-3.5 3.5a.499.499 0 0 1-.706 0l-1.5-1.5a.5.5 0 1 1 .706-.708l1.147 1.147 3.147-3.147a.5.5 0 1 1 .706.708m3.078 2.295-.589-1.149.588-1.15a.633.633 0 0 0-.219-.82l-1.085-.7-.065-1.287a.627.627 0 0 0-.6-.603l-1.29-.066-.703-1.087a.636.636 0 0 0-.82-.217l-1.148.588-1.15-.588a.631.631 0 0 0-.82.22l-.701 1.085-1.289.065a.626.626 0 0 0-.6.6l-.066 1.29-1.088.702a.634.634 0 0 0-.216.82l.588 1.149-.588 1.15a.632.632 0 0 0 .219.819l1.085.701.065 1.286c.014.33.274.59.6.604l1.29.065.703 1.088c.177.27.53.362.82.216l1.148-.588 1.15.589a.629.629 0 0 0 .82-.22l.701-1.085 1.286-.064a.627.627 0 0 0 .604-.601l.065-1.29 1.088-.703a.633.633 0 0 0 .216-.819"></path></g></svg></span>`;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const uidParam = urlParams.get('uid');
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      window.location.href = 'auth.html';
+      return;
+    }
+    currentUser = user;
+    profileUserId = (uidParam && uidParam !== currentUser.uid) ? uidParam : currentUser.uid;
+    isOwnProfile = (profileUserId === currentUser.uid);
+    
+    try {
+      await loadProfile();
+      await loadUserPosts();
+      if (!isOwnProfile) {
+        await checkFollowStatus();
+        renderFollowButton();
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById('profileContent').innerHTML = `<div class="error-message">Error loading profile. Please try again.</div>`;
+    }
+  });
+
+  async function loadProfile() {
+    const profileSnap = await get(child(ref(db), `users/${profileUserId}`));
+    if (!profileSnap.exists()) {
+      if (isOwnProfile) {
+        const defaultProfile = {
+          username: currentUser.email.split('@')[0],
+          fullName: currentUser.email.split('@')[0],
+          email: currentUser.email,
+          dob: '',
+          avatar: currentUser.email.charAt(0).toUpperCase(),
+          verified: false,
+          createdAt: Date.now()
+        };
+        await set(ref(db, `users/${profileUserId}`), defaultProfile);
+        profileData = defaultProfile;
+      } else {
+        throw new Error('User profile not found');
+      }
+    } else {
+      profileData = profileSnap.val();
+    }
+    renderProfileUI();
+  }
+
+  function renderProfileUI() {
+    const container = document.getElementById('profileContent');
+    const badgeHtml = getVerifiedBadge(profileData.verified);
+    container.innerHTML = `
+      <div class="profile-header">
+        <div class="avatar-large">${profileData.avatar || profileData.username?.charAt(0).toUpperCase() || 'U'}</div>
+        <div>
+          <h1>${escapeHtml(profileData.fullName || profileData.username)} ${badgeHtml}</h1>
+          <div class="stats">
+            <div class="stat"><div class="stat-number" id="followingCount">0</div><div class="stat-label">Following</div></div>
+            <div class="stat"><div class="stat-number" id="followersCount">0</div><div class="stat-label">Followers</div></div>
+            <div class="stat"><div class="stat-number" id="totalLikes">0</div><div class="stat-label">Total likes</div></div>
+          </div>
+          <div id="followButtonContainer" style="margin-top: 1rem;"></div>
+        </div>
+      </div>
+
+      <div id="viewMode">
+        <div class="info-row"><span class="info-label">Username</span><span>${escapeHtml(profileData.username || '')}</span></div>
+        <div class="info-row"><span class="info-label">Full name</span><span>${escapeHtml(profileData.fullName || '')}</span></div>
+        <div class="info-row"><span class="info-label">Date of birth</span><span>${escapeHtml(profileData.dob || 'Not set')}</span></div>
+        <div id="emailRow" class="info-row"><span class="info-label">Email</span><span>${escapeHtml(profileData.email || currentUser?.email || '')}</span></div>
+        ${isOwnProfile ? '<button id="editProfileBtn" class="edit-btn" style="margin-top: 1rem;">Edit Profile</button>' : ''}
+      </div>
+
+      <div id="editMode" class="hidden">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="editUsername" value="${escapeHtml(profileData.username || '')}">
+        </div>
+        <div class="form-group">
+          <label>Full name</label>
+          <input type="text" id="editFullname" value="${escapeHtml(profileData.fullName || '')}">
+        </div>
+        <div class="form-group">
+          <label>Date of birth</label>
+          <input type="date" id="editDob" value="${profileData.dob || ''}">
+        </div>
+        <div class="form-group">
+          <label>Avatar (single character)</label>
+          <input type="text" id="editAvatar" maxlength="1" value="${profileData.avatar || ''}" placeholder="⭐">
+        </div>
+        <button id="saveProfileBtn" class="save-btn">Save changes</button>
+        <button id="cancelEditBtn" class="cancel-btn" style="margin-left: 1rem;">Cancel</button>
+      </div>
+
+      <div style="margin-top: 2rem;">
+        <h3>Pulses</h3>
+        <div id="userPosts"></div>
+      </div>
+
+      ${isOwnProfile && currentUser.email === ADMIN_EMAIL ? `
+        <div class="admin-link">
+          <a href="admin-verification.html"><i class="fas fa-shield-alt"></i> Admin Panel – Verify Users</a>
+        </div>
+      ` : ''}
+    `;
+
+    loadStats();
+
+    if (isOwnProfile) {
+      const editBtn = document.getElementById('editProfileBtn');
+      const saveBtn = document.getElementById('saveProfileBtn');
+      const cancelBtn = document.getElementById('cancelEditBtn');
+      const viewModeDiv = document.getElementById('viewMode');
+      const editModeDiv = document.getElementById('editMode');
+
+      editBtn.addEventListener('click', () => {
+        viewModeDiv.classList.add('hidden');
+        editModeDiv.classList.remove('hidden');
+      });
+      cancelBtn.addEventListener('click', () => {
+        viewModeDiv.classList.remove('hidden');
+        editModeDiv.classList.add('hidden');
+      });
+      saveBtn.addEventListener('click', async () => {
+        const newUsername = document.getElementById('editUsername').value.trim();
+        const newFullname = document.getElementById('editFullname').value.trim();
+        const newDob = document.getElementById('editDob').value;
+        const newAvatar = document.getElementById('editAvatar').value.trim();
+        if (!newUsername) {
+          alert("Username cannot be empty");
+          return;
+        }
+        const updates = {};
+        updates[`users/${currentUser.uid}/username`] = newUsername;
+        updates[`users/${currentUser.uid}/fullName`] = newFullname;
+        updates[`users/${currentUser.uid}/dob`] = newDob;
+        if (newAvatar) updates[`users/${currentUser.uid}/avatar`] = newAvatar.charAt(0);
+        await update(ref(db), updates);
+        await loadProfile();
+        viewModeDiv.classList.remove('hidden');
+        editModeDiv.classList.add('hidden');
+        alert("Profile updated!");
+      });
+    } else {
+      document.getElementById('emailRow')?.remove();
+    }
+  }
+
+  async function loadStats() {
+    const followingSnap = await get(child(ref(db), `users/${profileUserId}/following`));
+    const followersSnap = await get(child(ref(db), `users/${profileUserId}/followers`));
+    const followingCount = followingSnap.exists() ? Object.keys(followingSnap.val()).length : 0;
+    const followersCount = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
+    document.getElementById('followingCount').innerText = followingCount;
+    document.getElementById('followersCount').innerText = followersCount;
+  }
+
+  async function checkFollowStatus() {
+    const followSnap = await get(child(ref(db), `users/${currentUser.uid}/following/${profileUserId}`));
+    followingStatus = followSnap.exists();
+  }
+
+  function renderFollowButton() {
+    const container = document.getElementById('followButtonContainer');
+    if (!container) return;
+    container.innerHTML = '';
+    const btn = document.createElement('button');
+    btn.className = `follow-profile-btn ${followingStatus ? 'following' : ''}`;
+    btn.innerText = followingStatus ? 'Following' : 'Follow';
+    btn.addEventListener('click', async () => {
+      if (followingStatus) {
+        await update(ref(db), {
+          [`users/${currentUser.uid}/following/${profileUserId}`]: null,
+          [`users/${profileUserId}/followers/${currentUser.uid}`]: null
+        });
+        followingStatus = false;
+      } else {
+        await update(ref(db), {
+          [`users/${currentUser.uid}/following/${profileUserId}`]: true,
+          [`users/${profileUserId}/followers/${currentUser.uid}`]: true
+        });
+        followingStatus = true;
+      }
+      renderFollowButton();
+      await loadStats();
+    });
+    container.appendChild(btn);
+  }
+
+  async function loadUserPosts() {
+    const postsRef = ref(db, 'posts');
+    const userPostsQuery = query(postsRef, orderByChild('authorId'), equalTo(profileUserId));
+    onValue(userPostsQuery, (snapshot) => {
+      const postsData = snapshot.val();
+      const container = document.getElementById('userPosts');
+      if (!container) return;
+      container.innerHTML = '';
+      let totalLikes = 0;
+      if (postsData) {
+        const postsArray = Object.values(postsData);
+        postsArray.sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+        postsArray.forEach(post => {
+          const likeCount = post.likes ? Object.keys(post.likes).length : 0;
+          totalLikes += likeCount;
+          const postDiv = document.createElement('div');
+          postDiv.className = 'glass-panel post-item';
+          postDiv.innerHTML = `
+            <div><strong>${escapeHtml(post.authorUsername)}</strong> · ${new Date(post.timestamp).toLocaleString()}</div>
+            <div style="margin: 0.5rem 0;">${escapeHtml(post.content)}</div>
+            <div>❤️ ${likeCount} likes · 💬 ${post.commentCount || 0} replies</div>
+          `;
+          container.appendChild(postDiv);
+        });
+      } else {
+        container.innerHTML = '<div class="glass-panel" style="padding:1rem; text-align:center;">No posts yet.</div>';
+      }
+      document.getElementById('totalLikes').innerText = totalLikes;
+    });
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+</script>
+</body>
+</html>
